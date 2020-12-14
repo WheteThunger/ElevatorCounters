@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Oxide.Plugins
 {
     [Info("Elevator Counters", "WhiteThunder", "1.0.0")]
-    [Description("Allows counters to be attached to elevators to display the current floor and function as a call button.")]
+    [Description("Allows wiring counters into elevators to display the current floor and function as a call button.")]
     internal class ElevatorCounters : CovalencePlugin
     {
         #region Fields
