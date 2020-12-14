@@ -172,6 +172,10 @@ namespace Oxide.Plugins
 
             var topElevator = elevatorIOEntity.GetParentEntity() as Elevator;
 
+            // This shouldn't happen normally, but it's possible if elevators were pasted incorrectly
+            if (topElevator == null)
+                return;
+
             var counters = GetAllConnectedCounters(topElevator);
             if (counters == null)
                 return;
@@ -323,22 +327,6 @@ namespace Oxide.Plugins
         private Elevator GetConnectedElevator(PowerCounter counter) =>
             counter.outputs[0].connectedTo.Get() as Elevator;
 
-        private PowerCounter GetEligibleElevatorCounter(PowerCounter counter)
-        {
-            if (counter == null)
-                return null;
-
-            // Ignore parented counters such as the lift counter
-            if (counter.HasParent())
-                return null;
-
-            // Ignore counters that have a connected input
-            if (counter.inputs[0].connectedTo.Get() != null)
-                return null;
-
-            return counter;
-        }
-
         private bool IsEligibleToBeElevatorCounter(PowerCounter counter)
         {
             // Ignore parented counters such as the lift counter
@@ -376,8 +364,24 @@ namespace Oxide.Plugins
 
         private void GetConnectedCounters(Elevator elevator, out PowerCounter counter1, out PowerCounter counter2)
         {
-            counter1 = GetEligibleElevatorCounter(elevator.inputs[0].connectedTo.ioEnt as PowerCounter);
-            counter2 = GetEligibleElevatorCounter(elevator.inputs[1].connectedTo.ioEnt as PowerCounter);
+            counter1 = GetEligibleElevatorCounter(elevator.inputs[0].connectedTo.Get() as PowerCounter);
+            counter2 = GetEligibleElevatorCounter(elevator.inputs[1].connectedTo.Get() as PowerCounter);
+        }
+
+        private PowerCounter GetEligibleElevatorCounter(PowerCounter counter)
+        {
+            if (counter == null)
+                return null;
+
+            // Ignore parented counters such as the lift counter
+            if (counter.HasParent())
+                return null;
+
+            // Ignore counters that have a connected input
+            if (counter.inputs[0].connectedTo.Get() != null)
+                return null;
+
+            return counter;
         }
 
         #endregion
