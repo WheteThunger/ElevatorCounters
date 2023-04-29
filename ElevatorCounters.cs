@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Elevator Counters", "WhiteThunder", "1.0.0")]
+    [Info("Elevator Counters", "WhiteThunder", "1.0.1")]
     [Description("Allows wiring counters into elevators to display the current floor and function as a call button.")]
     internal class ElevatorCounters : CovalencePlugin
     {
@@ -12,7 +12,7 @@ namespace Oxide.Plugins
 
         private const float MaxCounterUpdateFrequency = 0.4f;
 
-        private readonly Dictionary<uint, Action> liftTimerActions = new Dictionary<uint, Action>();
+        private readonly Dictionary<NetworkableId, Action> liftTimerActions = new Dictionary<NetworkableId, Action>();
 
         #endregion
 
