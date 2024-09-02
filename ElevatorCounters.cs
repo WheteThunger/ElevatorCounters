@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Elevator Counters", "WhiteThunder", "1.0.1")]
+    [Info("Elevator Counters", "WhiteThunder", "1.0.2")]
     [Description("Allows wiring counters into elevators to display the current floor and function as a call button.")]
     internal class ElevatorCounters : CovalencePlugin
     {
         #region Fields
+
+        private static readonly PropertyInfo ElevatorLiftOwnerProperty = typeof(ElevatorLift).GetProperty("owner", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
         private const float MaxCounterUpdateFrequency = 0.4f;
 
@@ -93,8 +96,8 @@ namespace Oxide.Plugins
 
         private void OnElevatorMove(Elevator topElevator, int targetFloor)
         {
-            var lift = topElevator.liftEntity;
-            if (lift == null)
+            if (!topElevator.liftEntity.TryGet(true, out var lift)
+                || lift == null)
                 return;
 
             var liftFloor = topElevator.LiftPositionToFloor();
@@ -221,6 +224,11 @@ namespace Oxide.Plugins
 
         #region Helper Methods
 
+        private static Elevator GetOwnerElevator(ElevatorLift lift)
+        {
+            return ElevatorLiftOwnerProperty?.GetValue(lift) as Elevator;
+        }
+
         private float GetTravelTime(ElevatorLift lift)
         {
             var tweens = LeanTween.descriptions(lift.gameObject);
@@ -265,7 +273,7 @@ namespace Oxide.Plugins
         private void UpdateCounters(ElevatorLift lift, PowerCounter[] counters)
         {
             // Get the elevator on every update, since the lift can be re-parented
-            var elevator = lift.GetParentEntity() as Elevator;
+            var elevator = GetOwnerElevator(lift);
             if (elevator == null || counters == null)
                 return;
 
@@ -285,7 +293,11 @@ namespace Oxide.Plugins
 
         private int GetDisplayFloor(Elevator topElevator)
         {
-            return topElevator.liftEntity != null ? topElevator.LiftPositionToFloor() + 1 : 1;
+            if (!topElevator.liftEntity.TryGet(true, out var liftEntity)
+                || liftEntity == null)
+                return 1;
+
+            return topElevator.LiftPositionToFloor() + 1;
         }
 
         private bool IsPowered(Elevator topElevator)
