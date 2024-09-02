@@ -12,7 +12,7 @@ namespace Oxide.Plugins
 
         private const float MaxCounterUpdateFrequency = 0.4f;
 
-        private readonly Dictionary<NetworkableId, Action> liftTimerActions = new Dictionary<NetworkableId, Action>();
+        private readonly Dictionary<NetworkableId, Action> liftTimerActions = new();
 
         #endregion
 
@@ -24,7 +24,9 @@ namespace Oxide.Plugins
             {
                 var counter = entity as PowerCounter;
                 if (counter != null)
+                {
                     HandleCounterInit(counter);
+                }
             }
         }
 
@@ -41,7 +43,9 @@ namespace Oxide.Plugins
 
             var topElevator = GetTopElevator(elevator);
             if (IsPowered(topElevator))
+            {
                 InitializeCounter(counter, GetDisplayFloor(topElevator));
+            }
         }
 
         // When an elevator is removed without adding a new one
@@ -109,7 +113,9 @@ namespace Oxide.Plugins
 
                 var counters = GetAllConnectedCounters(topElevator);
                 if (counters != null)
+                {
                     StartUpdatingLiftCounters(lift, counters, travelTime);
+                }
             });
         }
 
@@ -193,6 +199,7 @@ namespace Oxide.Plugins
                         if (counter != null)
                             ResetCounter(counter);
                     }
+
                     return;
                 }
 
@@ -208,8 +215,6 @@ namespace Oxide.Plugins
                         ResetCounter(counter);
                 }
             });
-
-            return;
         }
 
         #endregion
@@ -229,7 +234,9 @@ namespace Oxide.Plugins
         {
             Action existingTimerAction;
             if (liftTimerActions.TryGetValue(lift.net.ID, out existingTimerAction))
+            {
                 lift.CancelInvoke(existingTimerAction);
+            }
 
             var lastCounterUpdateTime = Time.time;
             Action timerAction = null;
@@ -276,17 +283,25 @@ namespace Oxide.Plugins
             }
         }
 
-        private int GetDisplayFloor(Elevator topElevator) =>
-            topElevator.liftEntity != null ? topElevator.LiftPositionToFloor() + 1 : 1;
+        private int GetDisplayFloor(Elevator topElevator)
+        {
+            return topElevator.liftEntity != null ? topElevator.LiftPositionToFloor() + 1 : 1;
+        }
 
-        private bool IsPowered(Elevator topElevator) =>
-            topElevator.ioEntity != null && topElevator.ioEntity.IsPowered();
+        private bool IsPowered(Elevator topElevator)
+        {
+            return topElevator.ioEntity != null && topElevator.ioEntity.IsPowered();
+        }
 
-        private Elevator GetTopElevator(Elevator elevator) =>
-            GetFarthestElevatorInDirection(elevator, Elevator.Direction.Up);
+        private Elevator GetTopElevator(Elevator elevator)
+        {
+            return GetFarthestElevatorInDirection(elevator, Elevator.Direction.Up);
+        }
 
-        private Elevator GetBottomElevator(Elevator elevator) =>
-            GetFarthestElevatorInDirection(elevator, Elevator.Direction.Down);
+        private Elevator GetBottomElevator(Elevator elevator)
+        {
+            return GetFarthestElevatorInDirection(elevator, Elevator.Direction.Down);
+        }
 
         private Elevator GetFarthestElevatorInDirection(Elevator elevator, Elevator.Direction direction)
         {
@@ -303,9 +318,13 @@ namespace Oxide.Plugins
         {
             var topElevator = GetTopElevator(elevator);
             if (IsPowered(topElevator))
+            {
                 InitializeCounter(counter, GetDisplayFloor(topElevator));
+            }
             else
+            {
                 ResetCounter(counter);
+            }
         }
 
         private void InitializeCounter(PowerCounter counter, int floor)
@@ -324,8 +343,10 @@ namespace Oxide.Plugins
             counter.SendNetworkUpdate();
         }
 
-        private Elevator GetConnectedElevator(PowerCounter counter) =>
-            counter.outputs[0].connectedTo.Get() as Elevator;
+        private Elevator GetConnectedElevator(PowerCounter counter)
+        {
+            return counter.outputs[0].connectedTo.Get() as Elevator;
+        }
 
         private bool IsEligibleToBeElevatorCounter(PowerCounter counter)
         {
@@ -339,8 +360,10 @@ namespace Oxide.Plugins
             return true;
         }
 
-        private bool HasConnectedInput(PowerCounter counter) =>
-            counter.inputs[0].connectedTo.Get() != null;
+        private bool HasConnectedInput(PowerCounter counter)
+        {
+            return counter.inputs[0].connectedTo.Get() != null;
+        }
 
         private PowerCounter[] GetAllConnectedCounters(Elevator topElevator)
         {
@@ -349,8 +372,7 @@ namespace Oxide.Plugins
 
             do
             {
-                PowerCounter counter1, counter2;
-                GetConnectedCounters(currentElevator, out counter1, out counter2);
+                GetConnectedCounters(currentElevator, out var counter1, out var counter2);
                 if (counter1 != null)
                     counters.Add(counter1);
 
