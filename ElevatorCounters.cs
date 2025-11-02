@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 
 namespace Oxide.Plugins
@@ -10,8 +9,6 @@ namespace Oxide.Plugins
     internal class ElevatorCounters : CovalencePlugin
     {
         #region Fields
-
-        private static readonly PropertyInfo ElevatorLiftOwnerProperty = typeof(ElevatorLift).GetProperty("owner", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
         private const float MaxCounterUpdateFrequency = 0.4f;
 
@@ -82,9 +79,13 @@ namespace Oxide.Plugins
                         continue;
 
                     if (isPowered)
+                    {
                         InitializeCounter(counter, currentFloor);
+                    }
                     else
+                    {
                         ResetCounter(counter);
+                    }
                 }
             });
         }
@@ -138,7 +139,7 @@ namespace Oxide.Plugins
         private void OnInputUpdate(PowerCounter counter, int inputAmount)
         {
             // Ignore counters not connected to elevators
-            Elevator elevator = GetConnectedElevator(counter);
+            var elevator = GetConnectedElevator(counter);
             if (elevator == null)
                 return;
 
@@ -213,9 +214,13 @@ namespace Oxide.Plugins
                 foreach (var counter in counters)
                 {
                     if (isPowered)
+                    {
                         InitializeCounter(counter, currentFloor);
+                    }
                     else
+                    {
                         ResetCounter(counter);
+                    }
                 }
             });
         }
@@ -223,11 +228,6 @@ namespace Oxide.Plugins
         #endregion
 
         #region Helper Methods
-
-        private static Elevator GetOwnerElevator(ElevatorLift lift)
-        {
-            return ElevatorLiftOwnerProperty?.GetValue(lift) as Elevator;
-        }
 
         private float GetTravelTime(ElevatorLift lift)
         {
@@ -240,8 +240,7 @@ namespace Oxide.Plugins
 
         private void StartUpdatingLiftCounters(ElevatorLift lift, PowerCounter[] counters, float timeToTravel)
         {
-            Action existingTimerAction;
-            if (liftTimerActions.TryGetValue(lift.net.ID, out existingTimerAction))
+            if (liftTimerActions.TryGetValue(lift.net.ID, out var existingTimerAction))
             {
                 lift.CancelInvoke(existingTimerAction);
             }
@@ -273,7 +272,7 @@ namespace Oxide.Plugins
         private void UpdateCounters(ElevatorLift lift, PowerCounter[] counters)
         {
             // Get the elevator on every update, since the lift can be re-parented
-            var elevator = GetOwnerElevator(lift);
+            var elevator = lift.owner;
             if (elevator == null || counters == null)
                 return;
 
@@ -316,7 +315,9 @@ namespace Oxide.Plugins
 
             Elevator nextElevator;
             while ((nextElevator = currentElevator.GetElevatorInDirection(direction)) != null)
+            {
                 currentElevator = nextElevator;
+            }
 
             return currentElevator;
         }
@@ -381,10 +382,14 @@ namespace Oxide.Plugins
             {
                 GetConnectedCounters(currentElevator, out var counter1, out var counter2);
                 if (counter1 != null)
+                {
                     counters.Add(counter1);
+                }
 
                 if (counter2 != null)
+                {
                     counters.Add(counter2);
+                }
             }
             while ((currentElevator = currentElevator.GetElevatorInDirection(Elevator.Direction.Down)) != null);
 
