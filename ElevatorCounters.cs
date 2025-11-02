@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Elevator Counters", "WhiteThunder", "1.0.2")]
+    [Info("Elevator Counters", "WhiteThunder", "1.0.3")]
     [Description("Allows wiring counters into elevators to display the current floor and function as a call button.")]
     internal class ElevatorCounters : CovalencePlugin
     {
@@ -45,7 +45,7 @@ namespace Oxide.Plugins
                 return;
 
             var topElevator = GetTopElevator(elevator);
-            if (IsPowered(topElevator))
+            if (topElevator.IsPowered())
             {
                 InitializeCounter(counter, GetDisplayFloor(topElevator));
             }
@@ -73,7 +73,7 @@ namespace Oxide.Plugins
                 }
 
                 var topElevator = GetTopElevator(bottomElevator);
-                var isPowered = IsPowered(topElevator);
+                var isPowered = topElevator.IsPowered();
                 var currentFloor = GetDisplayFloor(topElevator);
 
                 foreach (var counter in counters)
@@ -174,12 +174,12 @@ namespace Oxide.Plugins
         }
 
         // Covers the case when power state changes, and when a new elevator is added
-        private void OnInputUpdate(ElevatorIOEntity elevatorIOEntity, int inputAmount)
+        private void OnInputUpdate(Elevator elevator, int inputAmount)
         {
-            if (elevatorIOEntity == null)
+            if (elevator == null)
                 return;
 
-            var topElevator = elevatorIOEntity.GetParentEntity() as Elevator;
+            var topElevator = elevator.GetParentEntity() as Elevator;
 
             // This shouldn't happen normally, but it's possible if elevators were pasted incorrectly
             if (topElevator == null)
@@ -207,7 +207,7 @@ namespace Oxide.Plugins
                 }
 
                 topElevator = GetTopElevator(bottomElevator);
-                var isPowered = IsPowered(topElevator);
+                var isPowered = topElevator.IsPowered();
                 var currentFloor = GetDisplayFloor(topElevator);
 
                 foreach (var counter in counters)
@@ -300,11 +300,6 @@ namespace Oxide.Plugins
             return topElevator.LiftPositionToFloor() + 1;
         }
 
-        private bool IsPowered(Elevator topElevator)
-        {
-            return topElevator.ioEntity != null && topElevator.ioEntity.IsPowered();
-        }
-
         private Elevator GetTopElevator(Elevator elevator)
         {
             return GetFarthestElevatorInDirection(elevator, Elevator.Direction.Up);
@@ -329,7 +324,7 @@ namespace Oxide.Plugins
         private void MaybeToggleCounter(Elevator elevator, PowerCounter counter)
         {
             var topElevator = GetTopElevator(elevator);
-            if (IsPowered(topElevator))
+            if (topElevator.IsPowered())
             {
                 InitializeCounter(counter, GetDisplayFloor(topElevator));
             }
