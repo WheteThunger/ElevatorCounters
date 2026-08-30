@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Elevator Counters", "WhiteThunder", "1.0.3")]
+    [Info("Elevator Counters", "WhiteThunder", "1.0.4")]
     [Description("Allows wiring counters into elevators to display the current floor and function as a call button.")]
     internal class ElevatorCounters : CovalencePlugin
     {
@@ -337,15 +337,17 @@ namespace Oxide.Plugins
 
         private void InitializeCounter(PowerCounter counter, int floor)
         {
-            counter.SetFlag(IOEntity.Flag_HasPower, true);
-            counter.SetFlag(BaseEntity.Flags.Reserved2, true);
+            using var flagScope = counter.StartSetFlags(BaseEntity.FlagsUpdateMode.SendNetworkUpdate_Flags);
+            flagScope.Set(IOEntity.Flag_HasPower, true);
+            flagScope.Set(BaseEntity.Flags.Reserved2, true);
             counter.currentEnergy = floor;
             counter.SendNetworkUpdate();
         }
 
         private void ResetCounter(PowerCounter counter)
         {
-            counter.SetFlag(IOEntity.Flag_HasPower, false);
+            using var flagScope = counter.StartSetFlags(BaseEntity.FlagsUpdateMode.SendNetworkUpdate_Flags);
+            flagScope.Set(IOEntity.Flag_HasPower, false);
             counter.counterNumber = 0;
             counter.currentEnergy = 0;
             counter.SendNetworkUpdate();
